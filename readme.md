@@ -5,3 +5,5 @@ npm install
 npm run dev
 npm run build
 ```
+
+![Galaxy Example](GalaxyExample.png)
