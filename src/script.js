@@ -3,9 +3,6 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "lil-gui";
 
-/**
- * Base
- */
 // Debug
 const gui = new dat.GUI();
 
@@ -15,6 +12,12 @@ const canvas = document.querySelector("canvas.webgl");
 // Scene
 const scene = new THREE.Scene();
 
+//Texture
+const textureLoader = new THREE.TextureLoader();
+
+const particleTexture = textureLoader.load("/textures/starAlphaMap.png");
+
+// Mutable parameters
 const parameters = {};
 
 parameters.count = 100000;
@@ -22,15 +25,16 @@ parameters.size = 0.01;
 parameters.radius = 5;
 parameters.branches = 3;
 parameters.spin = 1;
-parameters.randomness = 0.2;
+parameters.randomness = 0.3;
 parameters.randomnessPower = 3;
-parameters.radiusStrength = 2;
+parameters.radiusStrength = 1.5;
 parameters.insideColor = "#ff6030";
 parameters.outsideColor = "#1b3984";
 let geometry = null;
 let points = null;
 let material = null;
 
+// Galaxy
 const generateGalaxy = () => {
   if (points) {
     geometry.dispose();
@@ -89,6 +93,7 @@ const generateGalaxy = () => {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     vertexColors: true,
+    alphaMap: particleTexture,
   });
 
   points = new THREE.Points(geometry, material);
@@ -100,13 +105,13 @@ generateGalaxy();
 gui
   .add(parameters, "count")
   .min(100)
-  .max(100000)
+  .max(500000)
   .step(100)
   .onFinishChange(generateGalaxy);
 gui
   .add(parameters, "size")
   .min(0.001)
-  .max(0.1)
+  .max(0.05)
   .step(0.001)
   .onFinishChange(generateGalaxy);
 gui.add(parameters, "branches", 2, 20).step(1).onFinishChange(generateGalaxy);
@@ -133,9 +138,8 @@ gui.add(parameters, "radiusStrength", 0, 10).onFinishChange(generateGalaxy);
 gui.add(parameters, "insideColor").onFinishChange(generateGalaxy);
 gui.add(parameters, "outsideColor").onFinishChange(generateGalaxy);
 
-/**
- * Sizes
- */
+//Sizes
+
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -155,10 +159,7 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
-/**
- * Camera
- */
-// Base camera
+// Camera
 const camera = new THREE.PerspectiveCamera(
   75,
   sizes.width / sizes.height,
@@ -174,30 +175,21 @@ scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 
-/**
- * Renderer
- */
+// Renderer
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-/**
- * Animate
- */
+//Animation
 const clock = new THREE.Clock();
 
 const tick = () => {
-  const elapsedTime = clock.getElapsedTime();
-
-  // Update controls
   controls.update();
 
-  // Render
   renderer.render(scene, camera);
 
-  // Call tick again on the next frame
   window.requestAnimationFrame(tick);
 };
 
